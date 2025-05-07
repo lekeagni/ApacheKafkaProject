@@ -1,0 +1,40 @@
+server:
+  port: 8762
+
+eureka:
+  client:
+    serverUrl:
+      defaultZone: http://localhost:8761/eureka
+
+spring:
+  application:
+    name: gateway-service
+
+  cloud:
+    gateway:
+      routes:
+        - id: default-root
+          uri: http://localhost:8070
+          predicates:
+           -Path:/
+
+        - id: product-service
+          uri: lb://PRODUCT-SERVICE
+          predicates:
+           -Path:/products/**
+
+        - id: order-service
+          uri: lb://ORDER-SERVICE
+          predicates:
+           -Path:/orders/**
+
+        - id: user-service
+          uri: lb://USER-SERVICE
+          predicates:
+            -Path:/users/**
+
+        - id: eurekaservicepro
+          uri: http://localhost:8761
+          predicates:
+           -Path:/eureka-server/**
+
