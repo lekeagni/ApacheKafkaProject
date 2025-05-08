@@ -1,6 +1,6 @@
 package com.example.product_service.mapper;
 
-import com.example.product_service.event.ProductEvent;
+import com.example.product_service.dto.ProductEvent;
 import com.example.product_service.model.ProductModel;
 import org.mapstruct.Mapper;
 
@@ -8,5 +8,5 @@ import org.mapstruct.Mapper;
 public interface ProductMapper {
 
     ProductEvent toDTO(ProductModel productModel);
-    ProductModel toEntity(ProductEvent productEvent);
+    ProductModel toEntity(ProductEvent dto);
 }
