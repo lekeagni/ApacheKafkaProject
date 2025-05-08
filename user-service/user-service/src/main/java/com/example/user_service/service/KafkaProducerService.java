@@ -14,7 +14,7 @@ public class KafkaProducerService {
 
     }
 
-    public void SendUserEvent(UserEvent userEvent){
+    public void sendUserEvent(UserEvent userEvent){
         kafkaTemplate.send("user-events",userEvent);
     }
 }

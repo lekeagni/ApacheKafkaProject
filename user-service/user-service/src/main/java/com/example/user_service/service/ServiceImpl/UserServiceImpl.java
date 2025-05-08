@@ -31,12 +31,16 @@ public class UserServiceImpl implements UserService {
     public UserEvent createUser(UserEvent userEvent) {
         UserModel userModel = this.userRepository.findAllByName(userEvent.getName());
         if (userModel != null){
-             throw new UserAlreadyExistException(userEvent.getName());
+            throw new UserAlreadyExistException(userEvent.getName());
         }
+
         UserModel user = userMapper.toTEntity(userEvent);
         UserModel saved = this.userRepository.save(user);
         UserEvent savedEvent = userMapper.toDO(saved);
-        KafkaProducerService.SendUserEvent(savedEvent);
+
+        // Appel  au producteur Kafka
+        kafkaProducerService.sendUserEvent(savedEvent);
+
         return savedEvent;
     }
 
@@ -49,30 +53,41 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserEvent getById(int userId) {
         UserModel userModel = this.userRepository.findById(userId)
-                .orElseThrow(()->new UserNotFoundException(userId));
+                .orElseThrow(() -> new UserNotFoundException(userId));
         return userMapper.toDO(userModel);
     }
 
     @Override
     public UserEvent updateUser(int userId, UserEvent userEvent) {
         UserModel exist = this.userRepository.findById(userId)
-                .orElseThrow(()->new UserNotFoundException(userId));
+                .orElseThrow(() -> new UserNotFoundException(userId));
 
-            exist.setName(userEvent.getName());
-            exist.setEmail(userEvent.getEmail());
-            exist.setPhone(userEvent.getPhone());
-            return userMapper.toDO(this.userRepository.save(exist));
+        exist.setName(userEvent.getName());
+        exist.setEmail(userEvent.getEmail());
+        exist.setPhone(userEvent.getPhone());
 
+        UserModel updated = this.userRepository.save(exist);
+        UserEvent updatedEvent = userMapper.toDO(updated);
+
+        // appel au producteur kafka pour les mises à jour
+        kafkaProducerService.sendUserEvent(updatedEvent);
+
+        return updatedEvent;
     }
 
     @Override
     public Boolean deleteUser(int userId) {
         Optional<UserModel> exist = this.userRepository.findById(userId);
-        if (exist.isPresent()){
-            UserModel u = exist.get();
-            this.userRepository.delete(u);
+        if (exist.isPresent()) {
+            UserModel user = exist.get();
+            this.userRepository.delete(user);
+
+            // appel au producteur kafka pour la suppression
+            UserEvent deletedEvent = userMapper.toDO(user);
+            kafkaProducerService.sendUserEvent(deletedEvent);
+
             return true;
         }
-        return false ;
+        return false;
     }
 }
