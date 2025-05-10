@@ -1,6 +1,6 @@
 package com.example.product_service.controller;
 
-import com.example.product_service.dto.ProductEvent;
+import com.example.product_service.event.ProductEvent;
 import com.example.product_service.service.ProductService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;

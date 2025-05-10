@@ -1,6 +1,6 @@
 package com.example.product_service.service;
 
-import com.example.product_service.dto.ProductEvent;
+import com.example.product_service.event.ProductEvent;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 
