@@ -8,7 +8,7 @@ import java.util.List;
 @Service
 public interface OrderService {
 
-    public OrderEvent createOrder(int productId, int userId, OrderEvent orderEvent);
+    public OrderEvent createOrder( OrderEvent orderEvent);
 
     public List<OrderEvent> getAllOrder();
 

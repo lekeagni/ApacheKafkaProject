@@ -5,6 +5,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.time.LocalDateTime;
+
 @Getter
 @Setter
 @NoArgsConstructor
@@ -14,6 +16,6 @@ public class OrderEvent {
     private int orderId;
     private int userId;
     private int productId;
-//    private LocalDateTime date;
+    private LocalDateTime date;
     private int quantity;
 }

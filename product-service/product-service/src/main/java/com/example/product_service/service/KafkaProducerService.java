@@ -14,6 +14,7 @@ public class KafkaProducerService {
     }
 
     public void SendProductEvent(ProductEvent productEvent){
+
         kafkaTemplate.send("product-events", productEvent);
     }
 }
