@@ -35,11 +35,15 @@ public class KafkaConsumerService {
     }
 
     public boolean isUserValid(int userId) {
+
+        System.out.println("Vérification utilisateur avec ID: " + userId);
+        System.out.println("Utilisateurs valides connus: " + validUsers);
         return validUsers.containsKey(userId);
     }
 
     public boolean isProductAvailable(int productId, int requestedQuantity) {
         ProductEvent product = availableProducts.get(productId);
+        System.out.println("isProductAvailable check for productId=" + productId + ": " + product);
         return product != null && product.getQuantity() >= requestedQuantity;
     }
 }

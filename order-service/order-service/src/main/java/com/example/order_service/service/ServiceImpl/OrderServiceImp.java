@@ -27,26 +27,56 @@ public class OrderServiceImp implements OrderService {
         this.kafkaConsumerService = kafkaConsumerService;
     }
 
+    private static final int MAX_WAIT_MS = 5000; // 5 secondes max
+    private static final int CHECK_INTERVAL_MS = 100;
+
     @Override
-    public OrderEvent createOrder( OrderEvent orderEvent) {
+    public OrderEvent createOrder(OrderEvent orderEvent) {
 
         int userId = orderEvent.getUserId();
         int productId = orderEvent.getProductId();
         int quantity = orderEvent.getQuantity();
 
-        if(!kafkaConsumerService.isUserValid(userId)){
-            throw  new UserNotFoundException(userId);
+        long waited = 0;
+
+        while (!kafkaConsumerService.isUserValid(userId) && waited < MAX_WAIT_MS) {
+            try {
+                Thread.sleep(CHECK_INTERVAL_MS);
+                waited += CHECK_INTERVAL_MS;
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                throw new RuntimeException("Thread interrupted while waiting for Kafka user event", e);
+            }
         }
 
-        if (!kafkaConsumerService.isProductAvailable(productId, quantity)){
+        if (!kafkaConsumerService.isUserValid(userId)) {
+            System.out.println("Tentative de création de commande pour userId=" + userId + ", productId=" + productId + ", quantité=" + quantity);
+            System.out.println("Attente de la disponibilité de l'utilisateur dans KafkaConsumerService...");
+            System.out.println("Utilisateur non trouvé après " + waited + " ms.");
+            throw new UserNotFoundException(userId);
+        }
+
+        waited = 0;
+        while (!kafkaConsumerService.isProductAvailable(productId, quantity) && waited < MAX_WAIT_MS) {
+            try {
+                Thread.sleep(CHECK_INTERVAL_MS);
+                waited += CHECK_INTERVAL_MS;
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                throw new RuntimeException("Thread interrupted while waiting for Kafka product event", e);
+            }
+        }
+
+        if (!kafkaConsumerService.isProductAvailable(productId, quantity)) {
             throw new ProductNotFoundException(productId);
         }
-        OrderModel orderModel = orderMapper.toEntity(orderEvent);
 
+        OrderModel orderModel = orderMapper.toEntity(orderEvent);
         orderModel.setDate(LocalDateTime.now());
 
         return orderMapper.toDTO(this.orderRepository.save(orderModel));
     }
+
 
     @Override
     public List<OrderEvent> getAllOrder() {

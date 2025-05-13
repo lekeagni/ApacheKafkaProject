@@ -29,7 +29,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserEvent createUser(UserEvent userEvent) {
-        UserModel userModel = this.userRepository.findAllByName(userEvent.getName());
+        UserModel userModel = this.userRepository.findByName(userEvent.getName());
         if (userModel != null){
             throw new UserAlreadyExistException(userEvent.getName());
         }
@@ -38,6 +38,11 @@ public class UserServiceImpl implements UserService {
         UserModel saved = this.userRepository.save(user);
         UserEvent savedEvent = userMapper.toDO(saved);
 
+        try {
+            Thread.sleep(2000); // 2 secondes
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
         // Appel  au producteur Kafka
         kafkaProducerService.sendUserEvent(savedEvent);
 
