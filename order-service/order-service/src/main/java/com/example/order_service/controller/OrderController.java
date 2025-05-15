@@ -10,6 +10,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/orders")
 @Tag(name = "order table test", description = "APIs REST test with Swagger")
@@ -32,4 +34,33 @@ public class OrderController {
     public ResponseEntity<OrderEvent> create( @RequestBody OrderEvent orderEvent){
         return ResponseEntity.status(HttpStatus.CREATED).body(this.orderService.createOrder( orderEvent));
     }
+
+    @GetMapping()
+    @Operation(summary = "get orders", description = "get all orders in the database ")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "get order successful"),
+            @ApiResponse(responseCode = "400", description = "orders not found"),
+            @ApiResponse(responseCode = "500", description = "server error")
+
+    })
+    public ResponseEntity<List<OrderEvent>> get(){
+        return ResponseEntity.status(HttpStatus.OK).body(this.orderService.getAllOrder());
+    }
+
+    @DeleteMapping("/delete/{orderId}")
+    @Operation(summary = "delete order", description = "delete order in the database ")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "deleted order successful"),
+            @ApiResponse(responseCode = "400", description = "order not found"),
+            @ApiResponse(responseCode = "500", description = "server error")
+
+    })
+    public ResponseEntity<Boolean> delete(@PathVariable int orderId){
+        boolean exist = this.orderService.delete(orderId);
+        if (exist){
+            return ResponseEntity.status(HttpStatus.ACCEPTED).body(true);
+        }
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(false);
+    }
+
 }
